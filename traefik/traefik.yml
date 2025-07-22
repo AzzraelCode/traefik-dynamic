@@ -1,0 +1,27 @@
+entryPoints:
+  web:
+    address: "0.0.0.0:80"
+  websecure:
+    address: "0.0.0.0:443"
+    
+providers:
+  file:
+    directory: "/etc/traefik/dynamic"
+    watch: true
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: cert@traefik-dynamic.tld
+      storage: "/acme.json"
+      httpChallenge:
+        entryPoint: web
+
+log:
+  level: ERROR
+  filePath: "/var/log/traefik-dynamic-debug.log"
+  format: common
+
+# accessLog:
+#   filePath: "/var/log/traefik-dynamic-access.log"
+#   format: common

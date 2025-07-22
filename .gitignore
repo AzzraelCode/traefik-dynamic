@@ -1,0 +1,8 @@
+.venv/
+logs/*
+.idea
+.vscode
+traefik/dynamic/*
+traefik/acme.json
+!logs/.gitkeep
+data/*

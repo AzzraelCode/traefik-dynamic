@@ -1,0 +1,56 @@
+services:
+
+  traefik_dynamic:
+    image: traefik:v3.0
+    command: /bin/sh -c "chmod 600 /acme.json && traefik --configFile=/etc/traefik/traefik.yml"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - ./traefik/acme.json:/acme.json
+      - ./logs:/var/log
+    restart: always
+    container_name: traefik_dynamic
+    networks:
+      - traefik_dynamic
+
+  traefik_dynamic_dummy:
+    image: nginx:alpine
+    container_name: traefik_dynamic_dummy
+    volumes:
+      - ./dummy/nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./dummy/html:/usr/share/nginx/html:ro
+      - ./logs:/var/log/nginx
+    networks:
+      - traefik_dynamic
+    depends_on:
+      - traefik_dynamic_app
+    expose:
+      - 80
+#    ports:
+#      - "80:80"
+    restart: always
+
+  traefik_dynamic_app:
+    build: ./app
+    command: uvicorn main:app --host 0.0.0.0 --port 80 --proxy-headers --reload
+    restart: always
+    container_name: traefik_dynamic_app
+    volumes:
+      - ./app:/app
+      - ./logs:/app/logs
+      - ./traefik/dynamic:/app/dynamic
+      - ./data:/app/data
+    env_file:
+      - ./data/.env
+    expose:
+      - "80"
+    networks:
+      - traefik_dynamic
+
+networks:
+  # docker network create traefik_dynamic
+  traefik_dynamic:
+    external: true
