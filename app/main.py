@@ -118,7 +118,7 @@ async def create(request: Request):
         # формируем массив доменов (на данном этапе не уникальных)
         # уникализация в generate_dynamic_yml
         domains = get_from_local()
-        if domains in params: domains += get_from_json(params["domains"])
+        if 'domains' in params: domains += get_from_json(params["domains"])
 
         generate_dynamic_yml(domains)
 
