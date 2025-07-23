@@ -1,5 +1,3 @@
-import collections
-import csv
 import json
 import os
 import re
@@ -7,6 +5,7 @@ import re
 import yaml
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from starlette import status
 from starlette.requests import Request
 
 app = FastAPI()
@@ -17,19 +16,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-def get_from_local():
-    csv_path = "data/.local.csv"
-
-    domains = []
-    if os.path.exists(csv_path):
-        with open(csv_path, newline="") as csvfile:
-            reader = csv.reader(csvfile)
-            for row in reader:
-                if len(row) != 3: continue
-                domains.append(row)
-
-    return domains
 
 def get_from_json(domains_str: str):
     """
@@ -47,16 +33,6 @@ def get_from_json(domains_str: str):
 
     return domains
 
-def ordered_to_dict(obj):
-    if isinstance(obj, collections.OrderedDict):
-        return {k: ordered_to_dict(v) for k, v in obj.items()}
-    elif isinstance(obj, dict):
-        return {k: ordered_to_dict(v) for k, v in obj.items()}
-    elif isinstance(obj, list):
-        return [ordered_to_dict(i) for i in obj]
-    else:
-        return obj
-
 def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
     """
     Формирование dynamic.yml из массива доменов вида
@@ -68,7 +44,7 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
     :return:
     """
 
-    routers = collections.OrderedDict()
+    routers = {}
     services = {
         'traefik-dynamic-dummy-80-service': {
             "loadBalancer": {
@@ -101,20 +77,6 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
             }
         }
 
-    routers['default_dummy'] = {
-        "rule": "HostRegexp(`{any:.+}`)",
-        "service": 'traefik-dynamic-dummy-80-service',
-        'priority': 1,  # важно чтобы не перебить остальные роуты
-        "entryPoints": ['web']  # но без tls чтобы не словать rate limit от LetsEncrypt
-    }
-
-    routers['fallback'] = {
-        # "rule": "HostRegexp(`{any:.+}`)", # в конце всех роутов, без rule
-        "service": 'traefik-dynamic-dummy-80-service',
-        'priority': 0,  # важно чтобы не перебить остальные роуты
-        "entryPoints": ['web']  # но без tls чтобы не словать rate limit от LetsEncrypt
-    }
-
     yml_data = {
         "http": {
             "routers": routers,
@@ -125,7 +87,7 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
     os.makedirs(os.path.dirname(yml_path), exist_ok=True)
     with open(yml_path, "w") as f:
         yaml.dump(
-            ordered_to_dict(yml_data),
+            yml_data,
             f,
             sort_keys=False,
             default_flow_style=False
@@ -152,16 +114,15 @@ async def create(request: Request):
     if not params.get("apikey"): raise HTTPException(status_code=403, detail="API key is lost")
     if not apikey: raise HTTPException(status_code=403, detail="Set API Key for Traefik Dynamic")
     if apikey != params["apikey"]: raise HTTPException(status_code=403, detail="Invalid API Key")
+    if 'domains' not in params: raise HTTPException(status_code=status.HTTP_418_IM_A_TEAPOT, detail="Nothing to add")
 
     try:
         # формируем массив доменов (на данном этапе не уникальных)
         # уникализация в generate_dynamic_yml
-        domains = get_from_local()
-        if 'domains' in params: domains += get_from_json(params["domains"])
-
+        domains = get_from_json(params["domains"])
         generate_dynamic_yml(domains)
-
         return {"message": f"Ok {len(domains)} domains were created.!"}
+
     except Exception as e:
         print(e)
         return {"message": str(e)}
