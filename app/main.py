@@ -114,7 +114,12 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
 
     os.makedirs(os.path.dirname(yml_path), exist_ok=True)
     with open(yml_path, "w") as f:
-        yaml.dump(yml_data, f, sort_keys=False)
+        yaml.dump(
+            yml_data,
+            f,
+            sort_keys=False,
+            default_flow_style=False
+        )
 
 @app.api_route("/", methods=["GET"])
 async def hello():
