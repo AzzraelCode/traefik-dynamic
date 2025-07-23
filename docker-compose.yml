@@ -9,7 +9,7 @@ services:
     volumes:
       - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
       - ./traefik/dynamic:/etc/traefik/dynamic:ro
-      - ./traefik/acme.json:/acme.json
+      - ./data/acme.json:/acme.json
       - ./logs:/var/log
     restart: always
     container_name: traefik_dynamic
