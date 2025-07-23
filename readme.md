@@ -40,14 +40,7 @@ http:
           - url: http://traefik_dynamic_dummy:80
 ```
 
-4 Можно создать data/.local.csv c содержимым 
-```csv
-test1.tld,web,traefik_dynamic_dummy:80
-test2.tld,web,traefik_dynamic_dummy:80
-test3.tld,web,traefik_dynamic_dummy:80
-```
-
-5 Запускай
+4 Запускай
 ```bash
 docker compose up -d
 ```
