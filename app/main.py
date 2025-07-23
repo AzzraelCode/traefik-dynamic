@@ -61,7 +61,7 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
     routers = {
         'default_dummy': {
             "rule": "HostRegexp(`{any:.+}`)",
-            "service": 'default-dummy',
+            "service": 'traefik-dynamic-dummy-80-service',
             'priority': 1, # важно чтобы не перебить остальные роуты
             "entryPoints": ['web'] # но без tls чтобы не словать rate limit от LetsEncrypt
         }
