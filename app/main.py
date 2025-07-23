@@ -47,6 +47,14 @@ def get_from_json(domains_str: str):
 
     return domains
 
+def ordered_to_dict(obj):
+    if isinstance(obj, collections.OrderedDict):
+        return {k: ordered_to_dict(v) for k, v in obj.items()}
+    elif isinstance(obj, list):
+        return [ordered_to_dict(i) for i in obj]
+    else:
+        return obj
+
 def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
     """
     Формирование dynamic.yml из массива доменов вида
@@ -115,7 +123,7 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
     os.makedirs(os.path.dirname(yml_path), exist_ok=True)
     with open(yml_path, "w") as f:
         yaml.dump(
-            yml_data,
+            ordered_to_dict(yml_data),
             f,
             sort_keys=False,
             default_flow_style=False
