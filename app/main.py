@@ -50,6 +50,8 @@ def get_from_json(domains_str: str):
 def ordered_to_dict(obj):
     if isinstance(obj, collections.OrderedDict):
         return {k: ordered_to_dict(v) for k, v in obj.items()}
+    elif isinstance(obj, dict):
+        return {k: ordered_to_dict(v) for k, v in obj.items()}
     elif isinstance(obj, list):
         return [ordered_to_dict(i) for i in obj]
     else:
