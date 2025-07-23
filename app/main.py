@@ -55,6 +55,7 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
         }
     }
 
+    print(domains)
     for domain, entrypoint, service_url in domains:
         router_name = f"{re.sub(r'[^a-zA-Z0-9]', '-', domain)}-router"
         service_name = f"{re.sub(r'[^a-zA-Z0-9]', '-', service_url)}-service"
@@ -90,7 +91,6 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
             yml_data,
             f,
             sort_keys=False,
-            default_flow_style=False
         )
 
 @app.api_route("/", methods=["GET"])
