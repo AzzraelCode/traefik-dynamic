@@ -114,11 +114,15 @@ async def create(request: Request):
     if not apikey: raise HTTPException(status_code=403, detail="Set API Key for Traefik Dynamic")
     if apikey != params["apikey"]: raise HTTPException(status_code=403, detail="Invalid API Key")
 
-    # формируем массив доменов (на данном этапе не уникальных)
-    # уникализация в generate_dynamic_yml
-    domains = get_from_local()
-    if domains in params: domains += get_from_json(params["domains"])
+    try:
+        # формируем массив доменов (на данном этапе не уникальных)
+        # уникализация в generate_dynamic_yml
+        domains = get_from_local()
+        if domains in params: domains += get_from_json(params["domains"])
 
-    generate_dynamic_yml(domains)
+        generate_dynamic_yml(domains)
 
-    return {"message": f"Ok {len(domains)} domains were created.!"}
+        return {"message": f"Ok {len(domains)} domains were created.!"}
+    except Exception as e:
+        print(e)
+        return {"message": str(e)}
