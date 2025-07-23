@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import traceback
 
 import yaml
 from fastapi import FastAPI, HTTPException
@@ -17,18 +18,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def get_from_json(domains_str: str):
+def get_from_json(domains_q: list):
     """
     [[domain,web,url]]
-    :param domains_str:
+    :param domains_q:
     :return:
     """
     domains = []
     try:
-        for domain in json.loads(domains_str): # [[]]
+        for domain in domains_q: # [[]]
             domains.append(domain)
 
-    except Exception:
+    except Exception as e:
         ...
 
     return domains
@@ -55,7 +56,6 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
         }
     }
 
-    print(domains)
     for domain, entrypoint, service_url in domains:
         router_name = f"{re.sub(r'[^a-zA-Z0-9]', '-', domain)}-router"
         service_name = f"{re.sub(r'[^a-zA-Z0-9]', '-', service_url)}-service"
@@ -78,20 +78,24 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
             }
         }
 
-    yml_data = {
-        "http": {
-            "routers": routers,
-            "services": services
+    routes_len = len(routers.keys())
+    if routers and services:
+        yml_data = {
+            "http": {
+                "routers": routers,
+                "services": services
+            }
         }
-    }
 
-    os.makedirs(os.path.dirname(yml_path), exist_ok=True)
-    with open(yml_path, "w") as f:
-        yaml.dump(
-            yml_data,
-            f,
-            sort_keys=False,
-        )
+        os.makedirs(os.path.dirname(yml_path), exist_ok=True)
+        with open(yml_path, "w") as f:
+            yaml.dump(
+                yml_data,
+                f,
+                sort_keys=False,
+            )
+
+    return routes_len
 
 @app.api_route("/", methods=["GET"])
 async def hello():
@@ -119,10 +123,8 @@ async def create(request: Request):
     try:
         # формируем массив доменов (на данном этапе не уникальных)
         # уникализация в generate_dynamic_yml
-        domains = get_from_json(params["domains"])
-        generate_dynamic_yml(domains)
-        return {"message": f"Ok {len(domains)} domains were created.!"}
+        routes_len = generate_dynamic_yml(json.loads(params['domains']))
+        return {"message": f"Ok {routes_len} domains were created.!"}
 
     except Exception as e:
-        print(e)
         return {"message": str(e)}
