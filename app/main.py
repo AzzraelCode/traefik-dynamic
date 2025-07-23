@@ -1,3 +1,4 @@
+import collections
 import csv
 import json
 import os
@@ -57,16 +58,7 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
     :return:
     """
 
-    # дефолтный роут, чтобы отбивать все случайные домены направленные на хост
-    routers = {
-        'default_dummy': {
-            "rule": "HostRegexp(`{any:.+}`)",
-            "service": 'traefik-dynamic-dummy-80-service',
-            'priority': 1, # важно чтобы не перебить остальные роуты
-            "entryPoints": ['web'] # но без tls чтобы не словать rate limit от LetsEncrypt
-        }
-    }
-
+    routers = collections.OrderedDict()
     services = {
         'traefik-dynamic-dummy-80-service': {
             "loadBalancer": {
@@ -98,6 +90,20 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
                 ]
             }
         }
+
+    routers['default_dummy'] = {
+        "rule": "HostRegexp(`{any:.+}`)",
+        "service": 'traefik-dynamic-dummy-80-service',
+        'priority': 1,  # важно чтобы не перебить остальные роуты
+        "entryPoints": ['web']  # но без tls чтобы не словать rate limit от LetsEncrypt
+    }
+
+    routers['fallback'] = {
+        # "rule": "HostRegexp(`{any:.+}`)", # в конце всех роутов, без rule
+        "service": 'traefik-dynamic-dummy-80-service',
+        'priority': 0,  # важно чтобы не перебить остальные роуты
+        "entryPoints": ['web']  # но без tls чтобы не словать rate limit от LetsEncrypt
+    }
 
     yml_data = {
         "http": {
