@@ -60,7 +60,7 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
     # дефолтный роут, чтобы отбивать все случайные домены направленные на хост
     routers = {
         'default_dummy': {
-            "rule": f"HostRegexp(`{any:.+}`)",
+            "rule": "HostRegexp(`{any:.+}`)",
             "service": 'default-dummy',
             'priority': 1, # важно чтобы не перебить остальные роуты
             "entryPoints": ['web'] # но без tls чтобы не словать rate limit от LetsEncrypt
@@ -71,7 +71,7 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
         'traefik-dynamic-dummy-80-service': {
             "loadBalancer": {
                 "servers": [
-                    {"url": f"http://traefik_dynamic_dummy:80"}
+                    {"url": "http://traefik_dynamic_dummy:80"}
                 ]
             }
         }
