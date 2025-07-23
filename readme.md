@@ -64,4 +64,4 @@ traefik-dynamic-api/create?apikey=1234
 где его содержимое JSON Encoded
 [[domain1.tld,web,service1], [domain1.tld,web,service1]]
 оно суммируется с содержимым data/.local.csv, уникализируется и запишется в traefik/dynamic/dynamic.yml
-после чего подсосется в traefik пости моментально (watch: true).
+после чего подсосется в traefik почти моментально (watch: true).
