@@ -56,16 +56,16 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
         }
     }
 
-    for domain, entrypoint, service_url in domains:
+    for domain, entrypoints, service_url in domains:
         router_name = f"{re.sub(r'[^a-zA-Z0-9]', '-', domain)}-router"
         service_name = f"{re.sub(r'[^a-zA-Z0-9]', '-', service_url)}-service"
-
+        entrypoints = entrypoints.split(",")
         router = {
             "rule": f"Host(`{domain}`)",
             "service": service_name,
-            "entryPoints": [entrypoint]
+            "entryPoints": entrypoints
         }
-        if entrypoint == "websecure":
+        if "websecure" in entrypoints:
             router["tls"] = {"certResolver": "letsencrypt"}
 
         routers[router_name] = router
