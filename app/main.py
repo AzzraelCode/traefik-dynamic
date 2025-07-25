@@ -34,17 +34,18 @@ def get_from_json(domains_q: list):
 
     return domains
 
-def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
+def generate_dynamic_yml(domains, filename = "dynamic"):
     """
     Формирование dynamic.yml из массива доменов вида
     [[domain1.tld,web,traefik_dynamic_dummy:80], [domain2.tld,websecure,some-service:8000]]
     Где url - это локальный урл внутри докера до контеентера без http://
 
     :param domains:
-    :param yml_path:
+    :param filename:
     :return:
     """
 
+    yml_path = f"dynamic/{filename}.yml"
     routers = {}
     services = {
         'traefik-dynamic-dummy-80-service': {
@@ -123,7 +124,8 @@ async def create(request: Request):
     try:
         # формируем массив доменов (на данном этапе не уникальных)
         # уникализация в generate_dynamic_yml
-        routes_len = generate_dynamic_yml(json.loads(params['domains']))
+        filename = re.sub(r'[^a-zA-Z0-9]', '', params.get("filename", "dynamic").lower())
+        routes_len = generate_dynamic_yml(json.loads(params['domains']), filename)
         return {"message": f"Ok {routes_len} domains were created.!"}
 
     except Exception as e:
