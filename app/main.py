@@ -73,7 +73,7 @@ def generate_dynamic_yml(domains, yml_path="dynamic/dynamic.yml"):
         services[service_name] = {
             "loadBalancer": {
                 "servers": [
-                    {"url": f"http://{service_url}"}
+                    {"url": f"{service_url}"}
                 ]
             }
         }
