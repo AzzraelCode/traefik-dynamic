@@ -1,8 +1,9 @@
 .venv/
+**/__pycache__/
 logs/*
 .idea
 .vscode
-traefik/dynamic/*
+traefik/dynamic/dynamic.yml
 traefik/acme.json
 !logs/.gitkeep
 data/*

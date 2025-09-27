@@ -1,0 +1,12 @@
+http:
+  routers:
+    test1-tld-router:
+      rule: Host(`test1.tld`)
+      service: traefik-dynamic-dummy-80-service
+      entryPoints:
+      - web
+  services:
+    traefik-dynamic-dummy-80-service:
+      loadBalancer:
+        servers:
+        - url: http://traefik_dynamic_dummy:80
