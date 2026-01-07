@@ -7,3 +7,5 @@ traefik/dynamic/dynamic.yml
 traefik/acme.json
 !logs/.gitkeep
 data/*
+app/data/*
+app/dynamic/*
